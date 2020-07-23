@@ -1,0 +1,79 @@
+---
+# tasks file for mirrors
+
+- name: Find tar file and move to mirrors_dir
+  shell: "find / -name {{ mirrors_tar_file_name }}.tar.gz | while read line; do mv $line {{ mirrors_dir }};done"
+  ignore_errors: true
+
+- name: Extract converge-mirrors archive file to specified directory
+  shell: /bin/tar zxvf {{ mirrors_tar_file_name }}.tar.gz
+  args:
+    chdir: "{{ mirrors_dir }}"
+    creates: "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}"
+
+    #- name: Create yum.repos.d backup directory
+    #  file:
+    #    path: /etc/yum.repos.d.backup
+    #    state: directory
+    #    mode: 0755
+    #
+    #- name: Backup and clear repo configuration files, if existing
+    #  shell: /usr/bin/mv *repo /etc/yum.repos.d.backup
+    #  args:
+    #    chdir: /etc/yum.repos.d
+    #  ignore_errors: yes
+    #
+    #- name: Delete .repo files of mirrors server
+    #  file:
+    #   path: /etc/yum.repos.d/
+    #   state: absent
+    #
+    #- name: Makedir yum.repos.d
+    #  file:
+    #    path: /etc/yum.repos.d
+    #    state: directory
+    #    mode: 0755
+
+- name: Install createrepo, nginx and other initialize packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/pyliblzma-0.5.3-11.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libxml2-python-2.9.1-6.el7_2.3.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/deltarpm-3.6-3.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/python-deltarpm-3.6-3.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/createrepo-0.9.9-28.el7.noarch.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/fontconfig-2.10.95-11.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/fontpackages-filesystem-1.44-8.el7.noarch.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/gd-2.0.35-26.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/gperftools-libs-2.4-8.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libpng-1.5.13-7.el7_2.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libunwind-1.2-2.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libX11-1.6.5-1.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libX11-common-1.6.5-1.el7.noarch.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libXau-1.0.8-2.1.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libxcb-1.12-1.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libXpm-3.5.12-1.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libxslt-1.1.28-5.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/lyx-fonts-2.2.3-1.el7.noarch.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/GeoIP-1.5.0-11.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-all-modules-1.10.1-1.el7.noarch.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-filesystem-1.10.1-1.el7.noarch.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-mod-http-geoip-1.10.1-1.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-mod-http-image-filter-1.10.1-1.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-mod-http-perl-1.10.1-1.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-mod-http-xslt-filter-1.10.1-1.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-mod-mail-1.10.1-1.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-mod-stream-1.10.1-1.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-1.10.1-1.el7.x86_64.rpm"
+
+- name: Init repository
+  command: "/usr/bin/createrepo {{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/ --workers=9"
+
+- name: Change nginx http port
+  command: "sed -i 's/80/{{ mirrors_http_port }}/g' /etc/nginx/nginx.conf"
+
+- name: Copy nginx configuration for mirrors
+  template: src=mirrors.conf.j2 dest=/etc/nginx/default.d/mirrors.conf
+  notify: restart nginx

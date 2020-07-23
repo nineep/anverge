@@ -1,0 +1,44 @@
+---
+# Deploy TiDB cluster
+- name: Deploying PD cluster
+  hosts: pd_servers
+  tags:
+    - db_pd
+  roles:
+    - db_pd
+
+- name: Deploying TiKV cluster
+  hosts: tikv_servers
+  tags:
+    - db_tikv
+  roles:
+    - db_tikv
+
+- name: Deploying TiDB cluster
+  hosts: tidb_servers
+  tags:
+    - db_tidb
+  roles:
+    - db_tidb
+
+# Start TiDB
+- hosts: pd_servers
+  tags:
+    - db_pd
+  tasks:
+    - name: Start PD by systemd
+      systemd: name=pd.service state=started enabled=yes
+
+- hosts: tikv_servers
+  tags:
+    - db_tikv
+  tasks:
+    - name: Start TiKV by systemd
+      systemd: name=tikv-{{ tikv_port }}.service state=started enabled=yes
+
+- hosts: tidb_servers
+  tags:
+    - db_tidb
+  tasks:
+    - name: Start TiDB by systemd
+      systemd: name=tidb-{{ tidb_port }}.service state=started enabled=yes

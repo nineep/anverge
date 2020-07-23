@@ -1,0 +1,29 @@
+---
+# The variable file used by the playbooks in the monitor group.
+# It is primarily the deployment of monitor project.
+
+# Prometheus rpm packages need install
+prometheus_rpm_components:
+    - libvirt_exporter
+    - ceph_exporter
+    - node-exporter
+    - prometheus
+
+# Prometheus services need start
+prometheus_components_services:
+    - libvirt_exporter
+    - ceph_exporter
+    - node_exporter
+
+
+# Set up cgroup values of own services
+# Adjust values according to actual physical machine resources
+
+#mariadb_cpu_number: 1
+mariadb_cpu_number: 1
+#mariadb_memory_size: 4
+mariadb_memory_size: 4
+#ceph_cpu_number: 2-8
+ceph_cpu_number: 2-8
+#ceph_memory_size: 28
+ceph_memory_size: 28

@@ -1,0 +1,12 @@
+---
+# tasks file for ceph-deploy
+
+- include: init_ceph_cluster.yml
+  tags:
+    - init_ceph
+- include: purge_ceph_cluster.yml
+  tags:
+    - purge_ceph
+- include: install_ceph_cluster.yml
+  tags:
+    - install_ceph

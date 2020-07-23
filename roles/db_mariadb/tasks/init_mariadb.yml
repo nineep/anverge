@@ -1,0 +1,61 @@
+---
+- name: Install dependencies packages
+  yum: 
+    name: "{{ item }}"
+    state: present
+  with_items: 
+    - MySQL-python
+
+- name: Create catkeeper database
+  mysql_db: 
+    name: catkeeper
+    state: present
+
+- name: Create prometheus database
+  mysql_db: 
+    name: prometheus
+    state: present
+
+- name: Copy catkeeper.sql template to mariadb-server node
+  template:
+    src: catkeeper.sql
+    dest: /etc/my.cnf.d/catkeeper.sql
+
+- name: Copy prometheus.sql template to mariadb-server node
+  template:
+    src: prometheus.sql
+    dest: /etc/my.cnf.d/prometheus.sql
+
+- name: Import catkeeper.sql to catkeeper database
+  mysql_db:
+    state: import
+    name: catkeeper
+    target: /etc/my.cnf.d/catkeeper.sql
+
+- name: Import prometheus.sql to prometheus database
+  mysql_db:
+    state: import
+    name: prometheus
+    target: /etc/my.cnf.d/prometheus.sql
+
+- name: Create database user catkeeper
+  mysql_user:
+    name: catkeeper
+    host: '%'
+    password: gzw7om2hr47j3rss
+    priv: 'catkeeper.*:ALL'
+    state: present
+
+- name: Create database user prometheus
+  mysql_user:
+    name: prometheus
+    host: '%'
+    password: gzw7om2hr47j3rss
+    priv: 'prometheus.*:ALL'
+    state: present
+
+- name: Create admin user of UI with root privileges
+  command: mysql catkeeper -e "insert into User (userName, password, type) values('admin', 'admin', 'root');"
+
+  #- name: Insert physical machine informations
+  #  command: mysql catkeeper -e "insert into physicalmachine(ipaddress, name, description, cputype, cpu, cpufreq, cpusocket, cpukernel, cputhread, numa, memory, active) values('{{ ansible_default_ipv4.address }}', '{{ ansible_hostname }}', 'hardware info', '{{ ansible_architecture }}', '{{ ansible_processor_vcpus }}', 'cpufreq', 'cpusocket', '{{ ansible_processor_cores }}', '{{ ansible_processor_threads_per_core }}', 'numa', '{{ ansible_memtotal_mb }}', 'true');"

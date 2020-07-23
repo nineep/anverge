@@ -1,0 +1,21 @@
+---
+# tasks file for db_mariadb_client
+- name: Install mariadb client
+  yum:
+    name: mariadb 
+    state: present
+
+- name: Gets the CPU NUMA parameters
+  shell: /usr/bin/lscpu | grep  'NUMA node(s)' | awk '{print $3}'
+  register: numa
+
+- name: Gets the CPU frequency parameters
+  shell: /usr/bin/lscpu | grep  'CPU MHz' | awk  '{print $3}'
+  register: cpufreq
+
+- name: Gets the CPU socket parameters
+  shell: /usr/bin/lscpu | grep  'Socket(s)' | awk  '{print $2}'
+  register: cpusocket
+
+- name: Insert physical machine informations
+  command: mysql -h {{ db_server_ip }} -u catkeeper -pgzw7om2hr47j3rss -D catkeeper -e "insert into physicalmachine(ipaddress, name, description, cputype, cpu, cpufreq, cpusocket, cpukernel, cputhread, numa, memory, active) values('{{ ansible_default_ipv4.address }}', '{{ ansible_hostname }}', 'hardware info', '{{ ansible_architecture }}', '{{ ansible_processor_vcpus }}', '{{ cpufreq.stdout }}', '{{ cpusocket.stdout }}', '{{ ansible_processor_cores }}', '{{ ansible_processor_threads_per_core }}', '{{ numa.stdout }}', '{{ ansible_memtotal_mb * 1024 }}', 'true');"

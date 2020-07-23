@@ -1,0 +1,23 @@
+---
+# tasks file for monitor
+
+- name: Install prometheus related packages
+  yum: name={{ item }} state=present
+  with_items: "{{ prometheus_rpm_packages }}"
+  notify: systemctl daemon-reload
+
+- name: Start prometheus related services
+  service: name={{ item }} state=started enabled=yes
+  with_items: "{{ prometheus_rpm_packages }}"
+
+- name: Configure and restart alertmanager
+  template: src=simple.yml.j2 dest=/etc/prometheus/simple.yml owner=root group=root mode=0644
+  notify: restart alertmanager
+  
+- name: Configure and restart athene
+  template: src=athene.conf.j2 dest=/etc/athene/athene.conf owner=root group=root mode=0644
+  notify: restart athene
+
+- name: Configure and restart prometheus
+  template: src=prometheus.yaml.j2 dest=/etc/prometheus/prometheus.yaml owner=root group=root mode=0644
+  notify: restart prometheus

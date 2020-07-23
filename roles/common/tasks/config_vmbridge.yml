@@ -1,0 +1,50 @@
+---
+- name: Stop and disable NetworkManager
+  service:
+    name: NetworkManager
+    state: stopped
+    enabled: no
+
+- name: Install bridge-utils
+  yum:
+    name: bridge-utils
+    state: present
+
+- name: Create virtual machine bridge
+  shell: "brctl show | grep vmbridge || brctl addbr vmbridge"
+
+- name: Create NIC file backup directory
+  file:
+    path: /tmp/ifcfg_backup
+    state: directory
+
+- name: Backup NIC configuration file
+  shell: "cp -f /etc/sysconfig/network-scripts/ifcfg-* /tmp/ifcfg_backup"
+
+  #- name: Gather and delegate facts
+  #  setup:
+  #  delegate_to: "{{ item }}"
+  #  delegate_facts: True
+  #  with_items: "{{ groups['all'] }}"
+
+# We do not know nic name, so fetch name from facts and change it.
+#- name: Configure NIC file
+#  template:
+#    src: ifcfg-eth0.j2
+#    dest: /etc/sysconfig/network-scripts/ifcfg-{{ hostvars[item]['ansible_default_ipv4']['alias'] }}
+#  with_items: "{{ groups['all'] }}"
+
+- name: Configure NIC file
+  template:
+    src: ifcfg-eth0.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ ansible_default_ipv4.interface }}
+  tags:
+    - NIC
+
+- name: Configure vmbridge NIC file
+  template: 
+    src: ifcfg-vmbridge.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-vmbridge
+  notify: restart network
+  tags:
+    - NIC

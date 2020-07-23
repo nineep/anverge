@@ -1,0 +1,5 @@
+---
+# handlers file for ui
+
+- name: restart ui
+  service: name=ui state=restarted

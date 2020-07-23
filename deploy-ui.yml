@@ -1,0 +1,6 @@
+---
+## Deploy ui nodes
+- hosts: ui
+  gather_facts: true
+  roles:
+    - ui

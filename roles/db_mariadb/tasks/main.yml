@@ -1,0 +1,5 @@
+---
+# tasks file for mariadb
+- include: mariadb_server.yml
+  #- include: mariadb_client.yml
+- include: init_mariadb.yml

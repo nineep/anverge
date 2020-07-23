@@ -1,0 +1,12 @@
+---
+# The variable file used by the playbooks in the mirrors group.
+# It is primarily the deployment of local mirrors.
+
+# You can specify the directory which you like
+mirrors_dir: /opt
+
+# This value must be same as tarball
+mirrors_tar_file_name: converge-mirrors
+
+# Mirrors http port
+mirrors_http_port: 8088

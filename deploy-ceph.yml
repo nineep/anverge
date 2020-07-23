@@ -1,0 +1,5 @@
+---
+- hosts: ceph-deploy
+  roles:
+    - ceph-deploy
+

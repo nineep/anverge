@@ -1,0 +1,42 @@
+# Converge CentOS-Base.repo
+
+[base]
+name=CentOS-$releasever - Base
+baseurl=http://{{ mirrors_ip }}/centos/os/
+gpgcheck=0
+enabled=1
+
+#released Updates
+[updates]
+name=CentOS-$releasever - Updates
+baseurl=http://{{ mirrors_ip }}/centos/updates/
+gpgcheck=0
+enabled=1
+
+#additional packages that may be useful
+[extras]
+name=CentOS-$releasever - Extras
+baseurl=http://{{ mirrors_ip }}/centos/extras/
+gpgcheck=0
+enabled=1
+
+#additional packages that extend functionality of existing packages
+[centosplus]
+name=CentOS-$releasever - Plus
+baseurl=http://{{ mirrors_ip }}/centos/centosplus/
+gpgcheck=0
+enabled=0
+
+#qemu
+[qemu-env]
+name=CentOS-$releasever - qemu-env
+baseurl=http://{{ mirrors_ip }}/centos/centos-qemu-ev/
+gpgcheck=0
+enabled=1
+
+#ceph
+[ceph-luminous]
+name=CentOS-$releasever - ceph-luminous
+baseurl=http://{{ mirrors_ip }}/centos/centos-ceph-luminous/
+gpgcheck=0
+enabled=1

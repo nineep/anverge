@@ -1,0 +1,11 @@
+---
+# handlers file for monitor
+
+- name: restart libvirt_exporter
+  service: name=libvirt_exporter state=restarted
+
+- name: restart ceph_exporter
+  service: name=ceph_exporter state=restarted
+
+- name: restart node_exporter
+  service: name=node_exporter state=restarted

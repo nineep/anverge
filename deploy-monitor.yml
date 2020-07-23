@@ -1,0 +1,11 @@
+---
+## Deploy monitor nodes
+- hosts: monitored
+  gather_facts: true
+  roles:
+    - monitored
+
+- hosts: monitor
+  gather_facts: true
+  roles:
+    - monitor

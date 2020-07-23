@@ -1,0 +1,6 @@
+---
+## Build mirrors
+- hosts: mirrors
+  gather_facts: false
+  roles:
+    - mirrors2

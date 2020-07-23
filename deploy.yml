@@ -1,0 +1,127 @@
+---
+
+## Build mirrors
+#- hosts: mirrors
+#  gather_facts: false
+#  roles:
+#    - mirrors
+
+## Environment initialization
+- hosts: all
+  gather_facts: true
+  roles:
+    - common
+
+## Deploy compute nodes
+- hosts: compute
+  roles:
+    - compute
+
+## Deploy monitor node
+- hosts: monitor
+  roles:
+    - monitor
+
+## Deploy TiDB cluster
+- name: Deploying PD cluster
+  hosts: pd_servers
+  tags:
+    - db_pd
+  roles:
+    - db_pd
+
+- name: Deploying TiKV cluster
+  hosts: tikv_servers
+  tags:
+    - db_tikv
+  roles:
+    - db_tikv
+
+- name: Deploying TiDB cluster
+  hosts: tidb_servers
+  tags:
+    - db_tidb
+  roles:
+    - db_tidb
+
+# Start TiDB
+- hosts: pd_servers
+  tags:
+    - db_pd
+  tasks:
+    - name: Start PD by systemd
+      systemd: name=pd.service state=started enabled=no
+
+          #    - name: Wait for PD up
+          #      wait_for: |
+          #        host={{ ansible_host }} port={{ pd_client_port }} state=present
+          #        send='GET /pd/api/v1/members HTTP/1.0\r\n\r\n' search_regex='200 OK'
+          #      when: not enable_tls|default(false)
+          #
+          #    - name: Wait for PD up
+          #      uri:
+          #        url: "https://{{ ansible_host }}:{{ pd_client_port }}/pd/api/v1/members"
+          #        validate_certs: no
+          #        client_cert: "{{ pd_cert_dir }}/pd-server-{{ ansible_host }}.pem"
+          #        client_key: "{{ pd_cert_dir }}/pd-server-PP ansible_host }}-key.pem"
+          #      register: result
+          #      until: result.status id defined and result.status == 200
+          #      retries: 10
+          #      delay: 5
+          #      when: enable_tls|default(false)
+
+- hosts: tikv_servers
+  tags:
+    - db_tikv
+  tasks:
+    - name: Start TiKV by systemd
+      systemd: name=tikv-{{ tikv_port }}.service state=started enabled=no
+
+          #    - name: Wait for TiKV up
+          #      wait_for_pid: |
+          #        pid_file={{ deploy_dir }}/status/tikv.pid timeout=300
+          #        thread_name_regex='endpoint' state=present
+          #      when: deployment_method == 'binary'
+          #
+          #    - command: cat {{ deploy_dir }}/status/tikv.pid
+          #      register: new_tikv_pid
+          #      ignore_errors: yes
+          #      changed_when: false
+          #
+          #    - name: Display new tikv pid
+          #      debug:
+          #      msg: "tikv binary pid: {{ new_tikv_pid.stdout }}"
+
+- hosts: tidb_servers
+  tags:
+    - db_tidb
+  tasks:
+    - name: Start TiDB by systemd
+      systemd: name=tidb-{{ tidb_port }}.service state=started enabled=no
+
+          #    - name: Wait for TiDB up
+          #      wait_for: |
+          #        host={{ ansible_host }} port={{ tidb_status_port }} state=present
+          #        send='GET /status HTTP/1.0\r\n\r\n' search_regex='TiDB'
+          #      when: not enable_tls|default(false)
+          #
+          #    - name: Wait for TiDB up
+          #      uri:
+          #        url: "https://{{ ansible_host }}:{{ tidb_status_port }}/status"
+          #        validate_certs: no
+          #        client_certs: "{{ tidb_cert_dir }}/tidb-server-{{ ansible_host }}.pem"
+          #        client_key: "{{ tidb_cert_dir }}/tidb-server-{{ ansible_host }}-key.pem"
+          #      register: result
+          #      until: result.status is defined and result.status == 200
+          #      retries: 10
+          #      delay: 5
+          #      when: enable_tls|default(false)
+
+##  Deploy ceph cluster
+#- hosts: ceph-common
+#  roles:
+#    - ceph-common
+
+      #- hosts: ceph-deploy
+      #  roles:
+      #    - ceph-deploy

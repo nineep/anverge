@@ -1,0 +1,5 @@
+---
+# tasks file for catkeeper
+
+- name: Install mariadb client
+  yum: name=mariadb state=present

@@ -1,0 +1,18 @@
+Logpath = "/var/log/catkeeper/api.log"
+Loglevel = "info"
+Accesslog = "/var/log/catkeeper/access.log"
+DataDriver = "mysql"
+DataSource = "catkeeper:gzw7om2hr47j3rss@tcp({{ db_server_ip }}:3306)/catkeeper"
+Ip  =  "{{ ansible_default_ipv4.address }}"
+User = "catkeeper"
+Passwd = "gzw7om2hr47j3rss"
+Port = "3306"
+Dbbase = "catkeeper"
+Proportion = 6
+TokenExpire = 36000
+# CPU reserved for OS.
+CpuReserved = 8
+# Memory size reserved for OS.
+MemReserved = 32
+CephMon = "{{ ceph_mons_ip }}"
+TemplatePath = "/etc/catkeeper/templates"

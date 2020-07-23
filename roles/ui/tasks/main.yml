@@ -1,0 +1,8 @@
+---
+# tasks file for ui
+
+- name: Install ui
+  yum: name=ui state=present
+
+- name: Start ui
+  service: name=ui state=started enabled=yes

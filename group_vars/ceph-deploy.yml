@@ -1,0 +1,19 @@
+---
+# The variable file used by the playbooks in the ceph-deploy group.
+
+# Operating directory of deploy ceph cluster
+ceph_deploy_dir: /opt/ceph-cluster
+
+# Monitor nodes' hostname
+# Used when create mon cluster
+mon_nodes: converge24 converge25 converge26
+
+# Osd nodes' hostname and disk devices name
+# Used when create osd cluster
+osd_nodes_disks:
+  - nodes: converge24
+    disks: /dev/vdc
+  - nodes: converge25
+    disks: /dev/vdc
+  - nodes: converge26
+    disks: /dev/vdc

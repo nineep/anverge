@@ -1,0 +1,5 @@
+### eking converge rpm mirrors ###
+location ~ ^/ {
+    root {{ mirrors_dir }}/{{ mirrors_tar_file_name}};
+    autoindex on;
+}

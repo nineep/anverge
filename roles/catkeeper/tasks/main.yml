@@ -1,0 +1,12 @@
+---
+# tasks file for catkeeper
+
+- name: Install catkeeper
+  yum: name=catkeeper state=present
+
+- name: Configure catkeeper
+  template: src=catkeeper.conf.j2 dest=/etc/catkeeper/catkeeper.conf
+  notify: restart catkeeper
+
+- name: Start catkeeper
+  service: name=catkeeper state=started enabled=yes

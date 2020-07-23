@@ -1,0 +1,5 @@
+---
+# handlers file for catkeeper
+
+- name: restart catkeeper
+  service: name=catkeeper state=restarted

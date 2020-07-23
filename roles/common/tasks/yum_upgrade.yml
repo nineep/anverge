@@ -1,0 +1,6 @@
+---
+- name: Yum upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+    exclude: kernel*, centos-release*

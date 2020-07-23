@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 60s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+#configure alertmanager service
+alerting:             
+  alertmanagers:
+    - static_configs:
+      - targets:
+          ["{{ alertmanager_ip }}:9093"] 
+                                     
+scrape_configs:
+  - job_name: 'node'
+    file_sd_configs:
+      - files:
+        - /etc/prometheus/node_targets.yaml
+
+  - job_name: 'ceph'
+    honor_labels: true
+    file_sd_configs:
+      - files:
+        - /etc/prometheus/ceph_targets.yaml
+
+  - job_name: 'libvirt'
+    file_sd_configs:
+      - files:
+        - /etc/prometheus/libvirt_targets.yaml
+rule_files:

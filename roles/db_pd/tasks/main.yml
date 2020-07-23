@@ -1,0 +1,50 @@
+---
+# tasks file for pd
+
+- name: Create deploy directories
+  file: path={{ item }} state=directory mode=0755
+  with_items:
+  - "{{ pd_log_dir }}"
+  - "{{ pd_conf_dir }}"
+  - "{{ pd_data_dir }}"
+
+- name: Load customized config
+  include_vars: file={{ playbook_dir }}/conf/pd.yml name=pd_conf_custom
+
+- name: Load default config
+  include_vars: file=default.yml name=pd_conf_default
+
+  #- name: Generate dynamic config
+  #  set_fact:
+  #    pd_conf_generated:
+  #      metric:
+  #        address: >-
+  #          {{ hostvars[groups.monitoring_servers[0]].ansible_host | default(hostvars[groups.monitoring_servers[0]].inventory_hostname) ~ ':' ~
+  #           (hostvars.get(groups.monitoring_servers[0]).pushgateway_port | default('9091')) |
+  #            default('') }}
+  #      replication:
+  #        location-labels: "{{ location_labels }}"
+  #      security:
+  #        cacert-path: >-
+  #          {%- if enable_tls|default(false) -%}{{ pd_cert_dir }}/ca.pem{%- else -%}{%- endif -%}
+  #        cert-path: >-
+  #          {%- if enable_tls|default(false) -%}{{ pd_cert_dir }}/pd-server-{{ pd_host }}.pem{%- else -%}{%- endif -%}
+  #        key-path: >-
+  #          {%- if enable_tls|default(false) -%}{{ pd_cert_dir }}/pd-server-{{ pd_host }}-key.pem{%- else -%}{%- endif -%}
+
+- name: Generate final config
+  set_fact:
+      #pd_conf: "{{ pd_conf_custom | with_default_dicts(pd_conf_generated, pd_conf_default) }}"
+    pd_conf: "{{ pd_conf_custom | with_default_dicts(pd_conf_default) }}"
+
+- debug: var=pd_conf
+
+- name: Create configuration file
+  template: src=pd.toml.j2 dest={{ deploy_dir }}/conf/pd.toml mode=0644 backup=yes
+  register: pd_conf_st
+
+- name: Backup conf file
+  command: mv "{{ pd_conf_st.backup_file }}" "{{ backup_dir }}"
+  when: pd_conf_st.changed and pd_conf_st.backup_file is defined
+
+- include: "{{ deployment_method }}_deployment.yml"

@@ -1,0 +1,44 @@
+---
+# The variable file used by the playbooks in the common(all) groups.
+
+## Init part
+# Configurate NTP servers for every nodes
+ntp_servers:
+  - "10.70.239.196 perfer"
+
+# Configurate yum repo files for every nodes
+# If you assign mirrors a nginx port, you should add it here.
+mirrors_ip: "10.70.237.148:8088"
+
+
+## DB part
+# TiDB variables
+deploy_dir: /opt/tidb/deploy
+deployment_method: binary
+process_supervision: systemd
+#cluster_name: tidb-cluster
+#tidb_version: v2.0.0
+#ansible_user: root
+deploy_user: root
+enable_binlog: False
+enable_slow_query_log: False
+# TiDB deploy directories
+status_dir: "{{ deploy_dir }}/status"
+backup_dir: "{{ deploy_dir }}/backup"
+images_dir: "{{ deploy_dir }}/images"
+# TiDB source code directories
+downloads_dir: "/opt/converge-mirrors/tidb-ansible/downloads"
+resources_dir: "/opt/converge-mirrors/tidb-ansible/resources"
+binary_dir:    "/opt/converge-mirrors/tidb-ansible/resources/bin"
+
+## Mariadb part
+# Configurate mariadb ip for catkeeper, monitor, mariadb_client
+db_server_ip: 192.168.1.13
+
+## Monitor part
+# Configurate alertmanager ip for prometheus
+alertmanager_ip: 192.168.1.14
+
+## Ceph part
+# Configurate ceph monitors ip for catkeeper
+ceph_mons_ip: 192.168.1.13,192.168.1.14,192.168.1.15

@@ -1,0 +1,8 @@
+---
+
+- name: Deploy systemd
+  include_role:
+    name: db_systemd
+  vars:
+    this_role_name: pd
+    service_name: pd

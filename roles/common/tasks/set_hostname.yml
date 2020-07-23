@@ -1,0 +1,8 @@
+---
+# tasks file for hostname
+
+- name: Set nodes hostname
+  hostname:
+    name: converge{{ ansible_default_ipv4.address.split('.')[-1] }}
+  tags:
+    - hostname

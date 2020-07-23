@@ -1,0 +1,9 @@
+---
+# Forbid firewall
+
+- name: Stop and disable firewalld, if running
+  ignore_errors: true
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no

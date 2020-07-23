@@ -1,0 +1,12 @@
+---
+# tasks file for catkeeper
+
+- name: Install mariadb-server
+  yum: name=mariadb-server state=present
+
+- name: Configure mariadb-server
+  template: src=my.cnf.j2 dest=/etc/my.cnf
+  notify: restart mariadb-server
+
+- name: Start mariadb-server
+  service: name=mariadb state=started enabled=yes

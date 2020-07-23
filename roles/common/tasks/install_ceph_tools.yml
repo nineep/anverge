@@ -1,0 +1,9 @@
+---
+
+- name: Install ceph related tool packages
+  yum: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - lvm2
+  tags: ceph-tools

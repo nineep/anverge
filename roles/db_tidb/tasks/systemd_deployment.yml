@@ -1,0 +1,9 @@
+---
+
+- name: Deploy systemd of tidb
+  include_role:
+    name: db_systemd
+  vars:
+    this_role_name: tidb
+    service_name: tidb-{{ tidb_port }}
+

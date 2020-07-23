@@ -1,0 +1,6 @@
+---
+## Deploy catkeeper nodes
+- hosts: catkeeper
+  gather_facts: true
+  roles:
+    - catkeeper

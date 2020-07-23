@@ -1,0 +1,25 @@
+---
+# purge enviroment
+
+- name: Remove ceph rpm packages
+  shell: ceph-deploy purge {{ hostvars[item]['ansible_hostname'] }}
+  with_items: "{{ groups['ceph-mon'] }}"
+  args:
+    chdir: "{{ ceph_deploy_dir }}"
+
+- name: Purge config files
+  shell: ceph-deploy purgedata {{ hostvars[item]['ansible_hostname'] }}
+  with_items: "{{ groups['ceph-mon'] }}"
+  args:
+    chdir: "{{ ceph_deploy_dir }}"
+
+- name: Forget keyrings
+  command: ceph-deploy forgetkeys
+  args:
+    chdir: "{{ ceph_deploy_dir }}"
+
+- name: Remove deployment files
+  command: rm -f ceph.*
+  args:
+    chdir: "{{ ceph_deploy_dir }}"
+    warn: False

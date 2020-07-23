@@ -1,0 +1,68 @@
+---
+# tasks file for monitored nodes
+
+- name: Install some prometheus exporter components
+  yum: name={{ item }} state=present
+  with_items: "{{ prometheus_rpm_components }}"
+
+- name: Start prometheus components service
+  service: name={{ item }} state=started enabled=yes
+  with_items: "{{ prometheus_components_services }}"
+
+- name: Configure and restart libvirt_exporter
+  template: src=libvirt_targets.yaml.j2 dest=/etc/prometheus/libvirt_targets.yaml owner=root group=root mode=0644
+  notify: restart libvirt_exporter
+
+- name: Configure and restart ceph_exporter
+  template: src=ceph_targets.yaml.j2 dest=/etc/prometheus/ceph_targets.yaml owner=root group=root mode=0644
+  notify: restart ceph_exporter
+  
+- name: Configure and restart node_exporter
+  template: src=node_targets.yaml.j2 dest=/etc/prometheus/node_targets.yaml owner=root group=root mode=0644
+  notify: restart node_exporter
+
+- name: Copy cgroup_set script to remote nodes
+  copy:
+    src: "cgroup_set.sh"
+    dest: "/etc/init.d/cgroup_set.sh"
+    mode: 0700
+  tags:
+    - cgroup
+
+- name: Setup cgroup values of mariadb cpu
+  shell: sed -i '/mariadb\/cpuset.cpus/s/1/{{ mariadb_cpu_number }}/g' /etc/init.d/cgroup_set.sh
+  tags:
+    - cgroup
+
+
+- name: Setup cgroup values of maridb memory
+  shell: sed -i '/mariadb\/memory.limit_in_bytes/s/4/{{ mariadb_memory_size }}/g' /etc/init.d/cgroup_set.sh
+  tags:
+    - cgroup
+
+
+- name: Setup cgroup values of ceph cpu
+  shell: sed -i '/ceph\/cpuset.cpus/s/2-8/{{ ceph_cpu_number }}/g' /etc/init.d/cgroup_set.sh
+  tags:
+    - cgroup
+
+
+- name: Setup cgroup values of ceph memory
+  shell: sed -i '/ceph\/memory.limit_in_bytes/s/28/{{ ceph_memory_size }}/g' /etc/init.d/cgroup_set.sh
+  tags:
+    - cgroup
+
+
+- name: Execute cgroup_set script
+  command: "/etc/init.d/cgroup_set.sh"
+  tags:
+    - cgroup
+
+
+- name: Add cgroup_set.sh to chkconfig
+  shell: "chkconfig --add cgroup_set.sh && chkconfig cgroup_set.sh on"
+  args:
+    chdir: /etc/init.d/
+  tags:
+    - cgroup
+

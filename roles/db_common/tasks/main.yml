@@ -1,0 +1,30 @@
+---
+# Common Tasks
+
+- name: Create deploy directories
+  file: path={{ item }} state=directory mode=0755
+  with_items:
+    - "{{ deploy_dir }}/scripts"
+    - "{{ deploy_dir }}/conf"
+    - "{{ backup_dir }}"
+
+- name: Create status directory
+  file: path={{ item }} state=directory mode=0755
+  with_items:
+    - "{{ status_dir }}"
+
+- name: Create deploy binary directory
+  file: path={{ item }} state=directory mode=0755
+  with_items:
+    - "{{ deploy_dir }}/bin"
+
+- name: Copy tidb tool
+  copy: src="{{ resources_dir }}/bin/{{ item }}" dest="{{ deploy_dir }}/bin/" mode=0755
+  with_items:
+    - pd-ctl
+    - pd-recover
+    - pd-tso-bench
+    - tidb-ctl
+    - tikv-ctl
+    - tikv-fail
+    - tikv-importer

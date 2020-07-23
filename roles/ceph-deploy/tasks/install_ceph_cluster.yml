@@ -1,0 +1,65 @@
+---
+# tasks file for ceph-deploy
+
+#- name: Gather and delegate facts
+#  setup:
+#  delegate_to: "{{ item }}"
+#  delegate_facts: True
+#  with_items: "{{ groups['all'] }}"
+#  tags:
+#    - ceph-mon
+#    - ceph-mgr
+#    - ceph-osd
+
+- name: Create monitor nodes
+  #shell: ceph-deploy new {{ hostvars[item]['ansible_hostname'] }} {{ hostvars[item]['ansible_hostname'] }}
+  #delegate_to:
+  #delegate_facts: True
+  #with_items: "{{ groups['ceph-mon'] }}"
+  shell: ceph-deploy new {{ mon_nodes }}
+  args:
+    chdir: "{{ ceph_deploy_dir }}"
+  tags:
+    - ceph-mon
+
+- name: Install ceph packages
+  shell: ceph-deploy install \
+         --repo-url=http://{{ mirrors_ip }}/centos/centos-ceph-luminous/ \
+         --gpg-url=http://{{ mirrors_ip }}/centos/centos-ceph-luminous/release.asc \
+         --no-adjust-repos {{ hostvars[item]['ansible_hostname'] }}
+  with_items: "{{ groups['ceph-mon'] }}"
+  args:
+    chdir: "{{ ceph_deploy_dir }}"
+  tags:
+    - ceph-mon
+
+- name: Init monitor nodes
+  shell: ceph-deploy --overwrite-conf mon create-initial
+  args:
+    chdir: "{{ ceph_deploy_dir }}"
+  tags:
+    - ceph-mon
+
+- name: Distribute ceph.conf and keyring to all nodes
+  shell: ceph-deploy admin {{ hostvars[item]['ansible_hostname'] }}
+  with_items: "{{ groups['ceph-mon'] }}"
+  args:
+    chdir: "{{ ceph_deploy_dir }}"
+  tags:
+    - ceph-mon
+
+- name: Create manager node
+  shell: ceph-deploy mgr create {{ hostvars[item]['ansible_hostname'] }}
+  with_items: "{{ groups['ceph-mgr'] }}"
+  args:
+    chdir: "{{ ceph_deploy_dir }}"
+  tags:
+    - ceph-mgr
+
+- name: Create osds nodes
+  shell: "ceph-deploy osd create --data {{ item.disks }} {{ item.nodes }}"
+  with_items: "{{ osd_nodes_disks }}"
+  args:
+    chdir: "{{ ceph_deploy_dir }}"
+  tags:
+    - ceph-osd

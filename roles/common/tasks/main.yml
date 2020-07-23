@@ -1,0 +1,20 @@
+---
+# This playbook contains common plays that will be run on all baremetals.
+
+- include: add_public_key.yml
+- include: config_repo.yml
+- include: disable_selinux.yml
+#- include: yum_upgrade.yml
+
+# If OS is not firewalld and iptables, we will ignore errors.
+- include: disable_iptables.yml
+- include: disable_firewalld.yml
+- include: set_hostname.yml
+- include: config_hosts.yml
+#- include: config_ip.yml
+- include: install_ntp.yml
+- include: install_ceph_tools.yml
+- include: config_ssh.yml
+- include: config_vmbridge.yml
+  tags:
+    - vmbridge

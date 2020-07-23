@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+
+ulimit -n 1000000
+
+# WARNING: This file was auto-generated. Do not edit!
+#          All your edit might be overwritten!
+DEPLOY_DIR={{ deploy_dir }}
+
+cd "${DEPLOY_DIR}" || exit 1
+
+{% set all_pd = [] -%}
+{% set pd_hosts = groups.pd_servers %}
+{% for host in pd_hosts -%}
+  {% set pd_ip = hostvars[host].ansible_host | default(hostvars[host].inventory_hostname) -%}
+  {% set pd_port = hostvars[host].pd_client_port -%}
+  {% set _ = all_pd.append("%s:%s" % (pd_ip, pd_port)) -%}
+{% endfor -%}
+
+exec bin/tidb-server \
+    -P {{ tidb_port }} \
+    --status="{{ tidb_status_port }}" \
+    --path="{{ all_pd | join(',') }}" \
+    --config=conf/tidb.toml \
+{% if enable_binlog %}
+    --binlog-socket="{{ pump_socket }}" \
+{% endif %}
+{% if enable_slow_query_log %}
+    --log-slow-query="{{ tidb_log_dir }}/{{ tidb_slow_query_filename }}" \
+{% endif %}
+    --log-file="{{ tidb_log_dir }}/{{ tidb_log_filename }}" 2> "{{ tidb_log_dir }}/{{ tidb_stderr_filename }}"

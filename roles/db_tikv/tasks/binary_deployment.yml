@@ -1,0 +1,27 @@
+---
+
+- name: Deploy binary of tikv
+  copy: src="{{ resources_dir }}/bin/tikv-server" dest="{{ deploy_dir }}/bin/" mode=0755 backup=yes
+  register: tikv_binary
+
+- name: Backup bianry file
+  command: mv "{{ tikv_binary.backup_file }}" "{{ backup_dir }}"
+  when: tikv_binary.changed and tikv_binary.backup_file is defined
+
+- name: Create run script
+  template:
+    src: "{{ item }}_tikv_binary.sh.j2"
+    dest: "{{ deploy_dir }}/scripts/{{ item }}_tikv.sh"
+    mode: "0755"
+    backup: yes
+  with_items:
+    - run
+  vars:
+    role_status_dir: status/{{ role_name }}
+  register: tikv_script
+
+- name: Backup script file
+  command: mv "{{ tikv_script.backup_file }}" "{{ backup_dir }}"
+  when: tikv_script.changed and tikv_script.backup_file is defined
+
+- include: "{{ process_supervision }}_deployment.yml"

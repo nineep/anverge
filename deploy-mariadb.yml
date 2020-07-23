@@ -1,0 +1,10 @@
+---
+- hosts: mariadb-server
+  gather_facts: true
+  roles:
+    - db_mariadb
+
+- hosts: mariadb-client
+  gather_facts: true
+  roles:
+    - db_mariadb_client

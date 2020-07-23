@@ -1,0 +1,31 @@
+---
+# tasks file for ceph-common
+
+#- name: yum upgrade all packages
+#  yum:
+#    name: '*'
+#    state: latest
+
+- name: install some necessary packages on deploy node
+  yum:
+    name: "{{ item }}"
+  with_items:
+    - ceph-deploy
+
+- name: Create deploy directory on deploy node
+  file:
+    path: "{{ ceph_deploy_dir }}"
+    state: directory
+
+- name: Gather and delegate facts
+  setup:
+  delegate_to: "{{ item }}"
+  delegate_facts: True
+  with_items: "{{ groups['all'] }}"
+  tags:
+    - ceph-mon
+    - ceph-mgr
+    - ceph-osd
+    - init_ceph
+    - purge_ceph
+    - install_ceph

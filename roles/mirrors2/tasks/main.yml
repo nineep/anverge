@@ -1,0 +1,70 @@
+---
+# tasks file for mirrors
+
+- name: Find tar file and move to mirrors_dir
+  shell: "find / -path {{ mirrors_dir }} -prune -o -name {{ mirrors_tar_file_name }}.tar.gz -print|while read line; do mv $line {{ mirrors_dir }};done"
+  ignore_errors: true
+  tags:
+    - jieya
+
+- name: Extract converge-mirrors archive file to specified directory
+  unarchive:
+    src: "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}.tar.gz"
+    dest: "{{ mirrors_dir }}"
+    remote_src: yes
+  tags:
+    - jieya
+
+- name: Create yum.repos.d backup directory
+  file:
+    path: /etc/yum.repos.d/backup
+    state: directory
+    mode: 0755
+
+- name: Backup and clear repo configuration files, if existing
+  shell: "/usr/bin/mv *repo backup"
+  args:
+    chdir: /etc/yum.repos.d
+  ignore_errors: true
+
+  #- name: Install createrepo, nginx and dependent packages
+  #  yum:
+  #    name: "{{ item }}"
+  #    state: present
+  #  with_items:
+  #    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/pyliblzma-0.5.3-11.el7.x86_64.rpm"
+  #    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libxml2-python-2.9.1-6.el7_2.3.x86_64.rpm"
+  #    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/deltarpm-3.6-3.el7.x86_64.rpm"
+  #    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/python-deltarpm-3.6-3.el7.x86_64.rpm"
+  #    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/createrepo-0.9.9-28.el7.noarch.rpm"
+  #    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-1.8.0-1.el7.ngx.x86_64.rpm"
+
+- name: Install createrepo, nginx and dependent packages
+  command: "rpm -ivh {{ item }} --force --nodeps"
+  with_items:
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/pyliblzma-0.5.3-11.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/libxml2-python-2.9.1-6.el7_2.3.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/deltarpm-3.6-3.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/python-deltarpm-3.6-3.el7.x86_64.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/createrepo-0.9.9-28.el7.noarch.rpm"
+    - "{{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/nginx-1.8.0-1.el7.ngx.x86_64.rpm"
+  warn: false
+
+- name: Recover repo config files
+  shell: "/usr/bin/mv backup/* ./"
+  args:
+    chdir: /etc/yum.repos.d
+
+- name: Init repository
+  command: "/usr/bin/createrepo {{ mirrors_dir }}/{{ mirrors_tar_file_name }}/eking-converge/ --workers=9"
+
+- name: Copy nginx configuration to mirrors server
+  template:
+    src: "default.conf.j2"
+    dest: "/etc/nginx/conf.d/default.conf"
+  notify: restart nginx
+
+- name: Exclude nginx yum update
+  lineinfile:
+    path: "/etc/yum.conf"
+    line: "exclude=nginx*"

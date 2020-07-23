@@ -1,0 +1,9 @@
+---
+# Forbid iptables
+
+- name: Stop and disable iptables service
+  ignore_errors: true
+  service:
+    name: iptables
+    state: stopped
+    enabled: no

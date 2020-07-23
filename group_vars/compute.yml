@@ -1,0 +1,10 @@
+---
+# The variable file used by the playbooks in the compute group.
+# It is primarily the deployment of hypervisor.
+
+# Rpm packages to install
+qemu_kvm_rpm_packages:
+    - qemu-kvm
+    - qemu
+    - qemu-img
+    - libvirt

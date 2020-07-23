@@ -1,0 +1,12 @@
+---
+# The variable file used by the playbooks in the monitor group.
+# It is primarily the deployment of monitor project.
+
+# Rpm packages to install
+prometheus_rpm_packages:
+    - alertmanager
+    - athene
+    - prometheus
+
+# Invoked by prometheus config file
+alertmanager_ip: 192.168.1.14

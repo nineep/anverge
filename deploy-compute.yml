@@ -1,0 +1,6 @@
+---
+## Deploy compute nodes
+- hosts: compute
+  gather_facts: true
+  roles:
+    - compute

@@ -1,0 +1,23 @@
+---
+# tasks file for compute
+
+- name: Install qemu-kvm related packages
+  yum: 
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ qemu_kvm_rpm_packages }}"
+
+- name: Start and enable libvirtd
+  service:
+    name: libvirtd
+    state: started
+    enabled: yes
+
+- name: Copy libvirt and ceph auth script to remote nodes
+  copy:
+    src: "libvirt-ceph.sh"
+    dest: "/etc/libvirt/libvirt-ceph.sh"
+    mode: 0700
+   
+- name: Execute auth script
+  command: "/etc/libvirt/libvirt-ceph.sh"

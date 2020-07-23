@@ -1,0 +1,31 @@
+---
+# Configure mirrors.
+
+- name: On all nodes, create yum.repos.d backup directory
+  file:
+    path: /etc/yum.repos.d/backup
+    state: directory
+    mode: 0775
+
+- name: On all nodes, backup and clear repo files
+  shell: "/usr/bin/mv *repo backup"
+  args:
+    chdir: /etc/yum.repos.d
+
+- name: Configure epel mirror
+  template:
+      src: epel.repo.j2
+      dest: /etc/yum.repos.d/epel.repo
+      mode: 0664
+
+- name: Configure base mirror
+  template:
+      src: CentOS-Base.repo.j2
+      dest: /etc/yum.repos.d/CentOS-Base.repo
+      mode: 0664
+
+- name: Configure eking converge mirror
+  template:
+      src: eking-converge.repo.j2
+      dest: /etc/yum.repos.d/eking-converge.repo
+      mode: 0664
